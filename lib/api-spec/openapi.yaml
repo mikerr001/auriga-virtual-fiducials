@@ -3,20 +3,31 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Auriga Virtual Fiducial Engine API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: calibration
+    description: Camera calibration profiles
+  - name: datasets
+    description: Dataset management
+  - name: estimation
+    description: Distance estimation
+  - name: evaluation
+    description: Evaluation reports and metrics
+  - name: research-debt
+    description: Research debt tracking
+  - name: validation
+    description: Synthetic validation runs
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +35,1045 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /calibration/profiles:
+    get:
+      operationId: listCalibrationProfiles
+      tags: [calibration]
+      summary: List all calibration profiles
+      responses:
+        "200":
+          description: List of calibration profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CalibrationProfile"
+    post:
+      operationId: createCalibrationProfile
+      tags: [calibration]
+      summary: Create a calibration profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CalibrationProfileInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CalibrationProfile"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /calibration/profiles/{id}:
+    get:
+      operationId: getCalibrationProfile
+      tags: [calibration]
+      summary: Get a calibration profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Calibration profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CalibrationProfile"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateCalibrationProfile
+      tags: [calibration]
+      summary: Update a calibration profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CalibrationProfileUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CalibrationProfile"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteCalibrationProfile
+      tags: [calibration]
+      summary: Delete a calibration profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /calibration/drift:
+    get:
+      operationId: getCalibrationDrift
+      tags: [calibration]
+      summary: Get calibration drift status across all profiles
+      responses:
+        "200":
+          description: Drift status summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CalibrationDriftStatus"
+
+  /datasets:
+    get:
+      operationId: listDatasets
+      tags: [datasets]
+      summary: List all datasets
+      responses:
+        "200":
+          description: List of datasets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dataset"
+    post:
+      operationId: createDataset
+      tags: [datasets]
+      summary: Register a dataset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DatasetInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dataset"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /datasets/{id}:
+    get:
+      operationId: getDataset
+      tags: [datasets]
+      summary: Get a dataset
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Dataset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dataset"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteDataset
+      tags: [datasets]
+      summary: Delete a dataset
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /estimation/run:
+    post:
+      operationId: runEstimation
+      tags: [estimation]
+      summary: Run distance estimation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EstimationInput"
+      responses:
+        "201":
+          description: Estimation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EstimationResult"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /estimation/results:
+    get:
+      operationId: listEstimationResults
+      tags: [estimation]
+      summary: List estimation results
+      responses:
+        "200":
+          description: List of estimation results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EstimationResult"
+
+  /estimation/results/{id}:
+    get:
+      operationId: getEstimationResult
+      tags: [estimation]
+      summary: Get an estimation result
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Estimation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EstimationResult"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /evaluation/reports:
+    get:
+      operationId: listEvaluationReports
+      tags: [evaluation]
+      summary: List evaluation reports
+      responses:
+        "200":
+          description: List of evaluation reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EvaluationReport"
+    post:
+      operationId: createEvaluationReport
+      tags: [evaluation]
+      summary: Run evaluation against a dataset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EvaluationInput"
+      responses:
+        "201":
+          description: Evaluation report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvaluationReport"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /evaluation/reports/{id}:
+    get:
+      operationId: getEvaluationReport
+      tags: [evaluation]
+      summary: Get an evaluation report
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Evaluation report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvaluationReport"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /evaluation/summary:
+    get:
+      operationId: getEvaluationSummary
+      tags: [evaluation]
+      summary: Get engine-wide evaluation summary
+      responses:
+        "200":
+          description: Summary of evaluation metrics across all reports
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvaluationSummary"
+
+  /research-debt:
+    get:
+      operationId: listResearchDebt
+      tags: [research-debt]
+      summary: List research debt entries
+      responses:
+        "200":
+          description: List of research debt entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResearchDebt"
+    post:
+      operationId: createResearchDebt
+      tags: [research-debt]
+      summary: Create a research debt entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResearchDebtInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResearchDebt"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /research-debt/{id}:
+    get:
+      operationId: getResearchDebt
+      tags: [research-debt]
+      summary: Get a research debt entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Research debt entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResearchDebt"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateResearchDebt
+      tags: [research-debt]
+      summary: Update a research debt entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResearchDebtUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResearchDebt"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteResearchDebt
+      tags: [research-debt]
+      summary: Delete a research debt entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /validation/runs:
+    get:
+      operationId: listValidationRuns
+      tags: [validation]
+      summary: List synthetic validation runs
+      responses:
+        "200":
+          description: List of validation runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ValidationRun"
+    post:
+      operationId: createValidationRun
+      tags: [validation]
+      summary: Create a synthetic validation run
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValidationRunInput"
+      responses:
+        "201":
+          description: Created validation run
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationRun"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /validation/runs/{id}:
+    get:
+      operationId: getValidationRun
+      tags: [validation]
+      summary: Get a validation run
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Validation run
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationRun"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    CalibrationProfile:
+      type: object
+      required:
+        - id
+        - name
+        - focalLengthPx
+        - sensorWidthPx
+        - sensorHeightPx
+        - markerSizeMm
+        - cameraModel
+        - markerType
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        focalLengthPx:
+          type: number
+          description: Focal length in pixels
+        sensorWidthPx:
+          type: integer
+        sensorHeightPx:
+          type: integer
+        markerSizeMm:
+          type: number
+          description: Physical marker size in mm
+        cameraModel:
+          type: string
+        markerType:
+          type: string
+          enum: [aruco, virtual, unknown]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CalibrationProfileInput:
+      type: object
+      required:
+        - name
+        - focalLengthPx
+        - sensorWidthPx
+        - sensorHeightPx
+        - markerSizeMm
+        - cameraModel
+        - markerType
+      properties:
+        name:
+          type: string
+          minLength: 1
+        focalLengthPx:
+          type: number
+        sensorWidthPx:
+          type: integer
+        sensorHeightPx:
+          type: integer
+        markerSizeMm:
+          type: number
+        cameraModel:
+          type: string
+          minLength: 1
+        markerType:
+          type: string
+          enum: [aruco, virtual, unknown]
+        notes:
+          type: string
+
+    CalibrationProfileUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        focalLengthPx:
+          type: number
+        sensorWidthPx:
+          type: integer
+        sensorHeightPx:
+          type: integer
+        markerSizeMm:
+          type: number
+        cameraModel:
+          type: string
+        markerType:
+          type: string
+          enum: [aruco, virtual, unknown]
+        notes:
+          type: string
+
+    CalibrationDriftStatus:
+      type: object
+      required: [totalProfiles, driftDetectedCount, profiles]
+      properties:
+        totalProfiles:
+          type: integer
+        driftDetectedCount:
+          type: integer
+        profiles:
+          type: array
+          items:
+            type: object
+            required: [id, name, driftDetected, lastCheckedAt]
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              driftDetected:
+                type: boolean
+              driftMagnitude:
+                type: ["number", "null"]
+                description: Percentage drift from baseline
+              lastCheckedAt:
+                type: string
+                format: date-time
+
+    Dataset:
+      type: object
+      required:
+        - id
+        - name
+        - source
+        - sampleCount
+        - status
+        - distanceRangeMinM
+        - distanceRangeMaxM
+        - createdAt
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        source:
+          type: string
+          enum: [data-factory, synthetic, manual, external]
+        sampleCount:
+          type: integer
+        status:
+          type: string
+          enum: [approved, pending, rejected]
+        distanceRangeMinM:
+          type: number
+          description: Minimum distance in metres
+        distanceRangeMaxM:
+          type: number
+          description: Maximum distance in metres
+        description:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    DatasetInput:
+      type: object
+      required:
+        - name
+        - source
+        - sampleCount
+        - status
+        - distanceRangeMinM
+        - distanceRangeMaxM
+      properties:
+        name:
+          type: string
+          minLength: 1
+        source:
+          type: string
+          enum: [data-factory, synthetic, manual, external]
+        sampleCount:
+          type: integer
+        status:
+          type: string
+          enum: [approved, pending, rejected]
+        distanceRangeMinM:
+          type: number
+        distanceRangeMaxM:
+          type: number
+        description:
+          type: string
+
+    EstimationResult:
+      type: object
+      required:
+        - id
+        - calibrationProfileId
+        - method
+        - markerPixelWidth
+        - estimatedDistanceM
+        - confidenceScore
+        - uncertaintyM
+        - confidenceLowerM
+        - confidenceUpperM
+        - createdAt
+      properties:
+        id:
+          type: integer
+        calibrationProfileId:
+          type: integer
+        datasetId:
+          type: ["integer", "null"]
+        method:
+          type: string
+          enum: [pinhole, perspective-n-point, homography]
+        markerPixelWidth:
+          type: number
+          description: Detected marker width in pixels
+        markerPixelHeight:
+          type: ["number", "null"]
+        measuredDistanceM:
+          type: ["number", "null"]
+          description: Ground-truth distance if available
+        estimatedDistanceM:
+          type: number
+          description: Distance estimated by engine (metres)
+        confidenceScore:
+          type: number
+          description: Confidence score 0-1
+        uncertaintyM:
+          type: number
+          description: Uncertainty radius in metres
+        confidenceLowerM:
+          type: number
+          description: Lower bound of confidence interval
+        confidenceUpperM:
+          type: number
+          description: Upper bound of confidence interval
+        lightingCondition:
+          type: ["string", "null"]
+          enum: [normal, low-light, bright, reflective, null]
+        partialOcclusion:
+          type: boolean
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    EstimationInput:
+      type: object
+      required:
+        - calibrationProfileId
+        - method
+        - markerPixelWidth
+      properties:
+        calibrationProfileId:
+          type: integer
+        datasetId:
+          type: integer
+        method:
+          type: string
+          enum: [pinhole, perspective-n-point, homography]
+        markerPixelWidth:
+          type: number
+        markerPixelHeight:
+          type: number
+        measuredDistanceM:
+          type: number
+        lightingCondition:
+          type: string
+          enum: [normal, low-light, bright, reflective]
+        partialOcclusion:
+          type: boolean
+        notes:
+          type: string
+
+    EvaluationReport:
+      type: object
+      required:
+        - id
+        - datasetId
+        - calibrationProfileId
+        - sampleCount
+        - mae
+        - rmse
+        - mape
+        - driftDetected
+        - createdAt
+      properties:
+        id:
+          type: integer
+        datasetId:
+          type: integer
+        calibrationProfileId:
+          type: integer
+        sampleCount:
+          type: integer
+        mae:
+          type: number
+          description: Mean Absolute Error (metres)
+        rmse:
+          type: number
+          description: Root Mean Square Error (metres)
+        mape:
+          type: number
+          description: Mean Absolute Percentage Error (%)
+        driftDetected:
+          type: boolean
+        driftMagnitude:
+          type: ["number", "null"]
+          description: Calibration drift magnitude (%)
+        minErrorM:
+          type: number
+        maxErrorM:
+          type: number
+        meanEstimatedDistanceM:
+          type: number
+        meanMeasuredDistanceM:
+          type: number
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    EvaluationInput:
+      type: object
+      required:
+        - datasetId
+        - calibrationProfileId
+      properties:
+        datasetId:
+          type: integer
+        calibrationProfileId:
+          type: integer
+        notes:
+          type: string
+
+    EvaluationSummary:
+      type: object
+      required:
+        - totalReports
+        - avgMae
+        - avgRmse
+        - avgMape
+        - driftDetectedCount
+        - recentReports
+      properties:
+        totalReports:
+          type: integer
+        avgMae:
+          type: number
+        avgRmse:
+          type: number
+        avgMape:
+          type: number
+        driftDetectedCount:
+          type: integer
+        recentReports:
+          type: array
+          items:
+            $ref: "#/components/schemas/EvaluationReport"
+
+    ResearchDebt:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - severity
+        - status
+        - category
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        severity:
+          type: string
+          enum: [critical, high, medium, low]
+        status:
+          type: string
+          enum: [open, in-progress, resolved, wont-fix]
+        category:
+          type: string
+          enum: [estimation-accuracy, calibration, dataset, validation, observability, performance, other]
+        relatedCalibrationProfileId:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ResearchDebtInput:
+      type: object
+      required:
+        - title
+        - description
+        - severity
+        - category
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        severity:
+          type: string
+          enum: [critical, high, medium, low]
+        category:
+          type: string
+          enum: [estimation-accuracy, calibration, dataset, validation, observability, performance, other]
+        relatedCalibrationProfileId:
+          type: integer
+
+    ResearchDebtUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        severity:
+          type: string
+          enum: [critical, high, medium, low]
+        status:
+          type: string
+          enum: [open, in-progress, resolved, wont-fix]
+        category:
+          type: string
+          enum: [estimation-accuracy, calibration, dataset, validation, observability, performance, other]
+        relatedCalibrationProfileId:
+          type: integer
+
+    ValidationRun:
+      type: object
+      required:
+        - id
+        - name
+        - testType
+        - calibrationProfileId
+        - totalCases
+        - passedCases
+        - failedCases
+        - passRate
+        - status
+        - createdAt
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        testType:
+          type: string
+          enum: [lighting-variation, reflective-environment, partial-occlusion, adversarial, standard]
+        calibrationProfileId:
+          type: integer
+        totalCases:
+          type: integer
+        passedCases:
+          type: integer
+        failedCases:
+          type: integer
+        passRate:
+          type: number
+          description: Pass rate 0-100
+        status:
+          type: string
+          enum: [running, completed, failed]
+        avgEstimatedDistanceM:
+          type: ["number", "null"]
+        avgConfidenceScore:
+          type: ["number", "null"]
+        mae:
+          type: ["number", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    ValidationRunInput:
+      type: object
+      required:
+        - name
+        - testType
+        - calibrationProfileId
+        - totalCases
+      properties:
+        name:
+          type: string
+          minLength: 1
+        testType:
+          type: string
+          enum: [lighting-variation, reflective-environment, partial-occlusion, adversarial, standard]
+        calibrationProfileId:
+          type: integer
+        totalCases:
+          type: integer
+        notes:
+          type: string
